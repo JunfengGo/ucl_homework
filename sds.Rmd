@@ -1,0 +1,336 @@
+---
+title: "homework"
+output:
+  pdf_document: default
+  word_document: default
+---
+```{r PART1,echo=FALSE}
+vdem <- read.csv("https://uclspp.github.io/datasets/data/vdem.csv") 
+ess <- read.csv("https://uclspp.github.io/datasets/data/ess.csv")
+```
+1.
+The null hypothesis of $\beta_{3}$ is that the significant of $rain_{i}*competitive_{i}$ is zero for the prediction of Turnout.
+2.
+In model1, $\beta1$ increase in mean response when predictor rain increase by 1, while other predictors fixed.
+In model2, if in a competitive state, each inch increase in rain, turnout increase $\beta_{1}+\beta_{3}$, and if in uncompetitive state, each inch increase in rain, turnout increase $\beta_{1}$
+
+3.
+(a):54.967
+(b):41.581
+(c):59.406
+(d):60.33
+
+4.1. By statistical analysis, we can see that the rain is significant for prediction, but however, the effect of rain is so small and it has a fluctuation with competitive state or not. When it is competitive state the effect of the rain is positive, but however when it is uncompetitive state, the effect of rain is negtive, so i think in real world, the rain is not important determinat for prediction.
+
+
+```{r PART2,echo=FALSE}
+summary(vdem)
+par(mfrow = c(2,3))
+plot(child_mortality~life_expectancy,data=vdem, col = "LightSkyBlue")
+plot(vdem$urban_population_pct,vdem$child_mortality, col = "LightSkyBlue")
+plot(vdem$gdp_per_cap,vdem$child_mortality, col = "LightSkyBlue")
+plot(vdem$healthcare,vdem$child_mortality, col = "LightSkyBlue")
+plot(vdem$education15,vdem$child_mortality, col = "LightSkyBlue")
+plot(vdem$government_effectiveness,vdem$child_mortality, col = "LightSkyBlue")
+#p
+```
+I intend to use life_expectancy , urban population _pct, gdp_per_cap , education15, government_effectiveness and healthcare as another 6 predictors. So i set model1 :child_mortality~ inequality_gini , and i set model2: child_mortality~life_expectancy , urban population _pct, gdp_per_cap , education15, government_effectiveness and healthcare+inequality_gini.
+
+Then descriptive plot given above.
+
+For the second model, null hypothesis is that 7 predictors are all not significant for prediction.
+
+
+Life expectancy: [ Life expectancy at birth (in years) ]
+
+A longer life expectancy in the region, which means the higher the local medical, health, the baby's birth condition and care conditions will be better infant mortality rate will be lower.
+
+ 
+
+Urban population: [ % of population living in urban areas (percentage) ]
+
+The health care environment of the city is better than that of the rural areas . In the case of controlling the birth rate of urban and rural populations, the greater the proportion of urban population, the more babies can be born under better medical and health conditions, and the overall infant mortality rate will also be Lower.
+
+ 
+
+Gdp : [ per capita GDP ]
+
+Increase means that the state and raise the economic level of personal per capita GDP, countries and individuals, including health care infant care put into production and are likely to increase in the infant mortality rate will be reduced random.
+
+ 
+
+Education: [ Average years of education for citizens over 15 years of age ]
+
+The greater the length of education for citizens, the higher the level of education. The more medical knowledge people know , the better their self-care awareness, the better they can do in production and newborn care, and the lower the infant mortality rate.
+
+ 
+
+Government effectiveness: [ Continuous measurement of government effectiveness based on the quality of public services provided by bureaucrats and government participants (higher values indicate more effective government) ]
+
+The better the government's effectiveness means that the quality of medical care included in the government's public services is better, the baby's production and birth care conditions will be better , and the mortality rate will be lower.
+
+ 
+
+Healthcare: [ Measure the extent to which high-quality basic health care is available to everyone (higher numbers indicate more access to health care) ]
+
+The higher the penetration rate of high-quality health care, the more infants' production and birth care conditions can be guaranteed and the mortality rate will be lower.
+
+
+```{r model,echo=FALSE}
+library(texreg)
+model1<-lm(vdem$child_mortality~vdem$inequality_gini)
+model2<-lm(vdem$child_mortality~vdem$inequality_gini+vdem$gdp_per_cap+vdem$life_expectancy+vdem$urban_population_pct+vdem$education15+vdem$healthcare+vdem$government_effectiveness)
+screenreg(list(model1,model2))
+par(mfrow = c(2,3))
+residuals<-residuals(model2) 
+plot(residuals~life_expectancy,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~urban_population_pct,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~gdp_per_cap,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~healthcare,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~healthcare,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~government_effectiveness,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+```
+We use residual-plot to detect non-linear. We cans see except the 2nd and 3nd residuals plots, all other plots seem much better: the residuals seem randomly distributed around zero .However, the 2nd plot seems to have more points above zero. While the 3nd plot has more points above zero 
+So we make transform for urban_population_pct variable.
+```{r quesd,echo=FALSE}
+nonlinear_model<-lm(vdem$child_mortality~vdem$inequality_gini+poly(vdem$gdp_per_cap,2)+vdem$life_expectancy+poly(vdem$urban_population_pct,2)+vdem$education15+vdem$healthcare+vdem$government_effectiveness)
+screenreg(list(model1,nonlinear_model))
+par(mfrow = c(1,2))
+residuals_1 <- residuals(nonlinear_model)
+plot(residuals_1~urban_population_pct,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals_1~gdp_per_cap,data=vdem, col = "LightSkyBlue")
+abline(h=0)
+```
+
+
+plots now look much better: the residuals seem randomly distributed around zero for all values of the migrantfraction variable, and there is no clearly distinguishable pattern anymore.
+
+Now, from the summary of regression, we can see that inequality_gini is significant in model1, and intercept is significant as well. For model2, Intercept,inequality_gini,life_expectancy,education15 ,healthcare,government_effectiveness  are very significant, and urban_population_pct is not significant.
+
+For model1 , we can see that inequality_gini has a positive influence on child_mortality, with a value of 1.16. For model2, government_effectiveness,healthcare ,education15,life_expectancy,inequality_gini   do have a negative influence on child_mortality with a fair value, and gdp_per_cap and gdp_per_cap^2 has a positive on the child_mortality and urban_pop_pct is not significant.
+
+Model ???t improves substantially, from 0.12 in our ???rst model to 0.88 in second model. So the second model fit very well.
+
+```{r sda,echo=FALSE}
+library(lmtest)
+bptest(nonlinear_model)
+```
+The null hypothesis for the Breusch-Pagan test is that the variance of the error term is constant, or in other words, the errors are homoskedestic. By looking at the p-value from Breusch-Pagan test we can determine whether we have heteroskedastic errors or not. The p-value tells us that we can reject the null hypothesis of homoskedestic errors.
+```{r ss,echo=FALSE}
+library(sandwich)
+screenreg(coeftest(nonlinear_model, vcov = vcovHC(nonlinear_model)))
+```
+
+
+
+
+each predictors' p-value is lower than 0.05, so we can see each of them is important for model2.
+
+For the second model, we can see that inequality_gini has negative influence on child_mortality, it is fair with a value of -0.13. gdp_per_cap has a positive influence on child_mortality however it is with a small value. Life_expectancy has a negative and fair influence on child_mortality. healthcare,government and womens_civ_lib has a negative and fair influence on child_mortality, too.Education has a negative and relative bigger influence on child_mortality.
+
+
+(2):
+```{r test,echo=FALSE}
+library(plm)
+state_effects<-plm(child_mortality~inequality_gini+poly(gdp_per_cap,2)+life_expectancy+poly(urban_population_pct,2)+education15+healthcare+government_effectiveness,data=vdem,index = c("country_name","year"),effect="individual")
+screenreg(state_effects)
+plmtest(state_effects, effect="individual")
+```
+The state_effects model shows that five of our independent variables are statistically signi???cant(inequality_gini,gdp_per_cap,life_expectancy,education15 ,government_effectiveness), with inequality_gini increasing murder rates by 0.32 .....
+The p-value suggests the presence of unit e???ects. In addition to state ???xed e???ects, a number of factors could a???ect the murder rate that are not speci???c to an individual state. We can model these time ???xed e???ects using the effect = "time" argument in plm()
+```{r sda1,echo=FALSE}
+time_effects<-plm(child_mortality~inequality_gini+poly(gdp_per_cap,2)+life_expectancy+poly(urban_population_pct,2)+education15+healthcare+government_effectiveness,data=vdem,index = c("country_name","year"),effect="time")
+screenreg(time_effects)
+plmtest(time_effects, effect="time")
+```
+The p-value tells us that we can reject the null hypothesis so we know that there are time ???xed e???ects present in our model.We already con???rmed the presence of state ???xed e???ects in the ???rst model we estimated. Now, in order to control for both state AND time ???xed e???ects, we need to estimate a model using the effect = "twoways"
+
+```{r sdasds,echo=FALSE}
+twoways_effects<-plm(child_mortality~inequality_gini+poly(gdp_per_cap,2)+life_expectancy+poly(urban_population_pct,2)+education15+healthcare+government_effectiveness,data=vdem,index = c("country_name","year"),effect="twoways")
+screenreg(twoways_effects)
+```
+In the twoways-effect, the inequality_gini is still significant and the effect has become 0.13 from -0.13, and there are another 5 variables siginificant,  life_expectancy become -1.6 from -2.15...
+```{r sdasdasdasd,echo=FALSE}
+screenreg( list(state_effects, time_effects, twoways_effects), custom.model.names = c("State Fixed Effects", "Time Fixed Effects", "Twoway Fixed Effects") )
+```
+
+```{r test1,echo=FALSE}
+
+pbgtest(twoways_effects)
+pcdtest(twoways_effects)
+```
+The Breusch-Godfrey test tells us that our model does indeed su???er from autocorrelated standard errors. Next, we run the Pesaran cross-sectional dependence test to check for spatial dependence in our model.
+The Pesaran CD test con???rms the presence of cross-sectional dependence in our model.
+
+
+```{r second,echo=FALSE}
+library(lmtest)
+twoway_hac <- coeftest( twoways_effects, vcov = vcovHC(twoways_effects, method = "arellano", type = "HC3") )
+twoway_hac
+twoway_scc <- coeftest( twoways_effects, vcov = vcovSCC(twoways_effects, type="HC3", cluster = "group") )
+twoway_scc
+
+```
+Since the Pesaran CD test told us that we have cross-sectional dependence in our model, we need to adjust for spatial dependence as well. Fortunately, the Driscoll and Kraay¡¯s (1998) SCC method gives us heteroskedasticity and autocorrelation consistent errors that are also robust to cross-sectional dependence. 
+```{r second3,echo=FALSE}
+screenreg( list(twoways_effects, twoway_hac, twoway_scc), custom.model.names = c("Twoway", "Twoway (HAC)", "Twoway (SCC)") )
+```
+The ¡°Twoway¡± model su???ers from heteroskedasticity, autocorrelation and cross-sectional dependence while the ¡°Twoway (HAC)¡± model su???ers only from cross-sectional dependence. The ¡°Twoway (SCC)¡± model corrects for heteroskedastic and autocorrelation consistent (HAC) standard errors that are also robust to cross-sectional dependence and is the correct model out of the three models we compared above.
+```{r second6,echo=FALSE}
+screenreg(list(state_effects, twoways_effects, twoway_hac, twoway_scc), custom.model.names = c("state_effects", "Twoway Effects", "Twoway (HAC)", "Twoway (SCC)"))
+```
+The country e???ects model was the ???rst model we estimated. However, since our data has time ???xed e???ects as well, we estimated a twoway ???xed e???ects model that controls for both country and time ???xed e???ects. After correcting for heteroskedasticity and temporal and spatial correlation, our ???nal model was the ¡°Twoway (SCC)¡±.
+```{r second5,echo=FALSE}
+twoway_scc
+```
+Since twoway_scc is not a model object but just a matrix of coe???cients that we obtained from coeftest(), we cannot use the coefficients() function here. Instead we can simply extract the coe???cients from the ???rst column of the matrix to get the relative e???ects of each variable.
+```{r second11,echo=FALSE}
+twoway_scc[,1] / diff(range(vdem$child_mortality, na.rm = TRUE))
+```
+In the ¡°Twoway (SCC)¡± model, inequality_gini, gdp_per_cap,life_expectancy, government_effectiveness are all statistically signi???cant. A one percent increase in inequality_gini is estimated to increase child_mortality by 0.7%. poly(gdp_per_cap,1) and ploy(gdp_per_cap,2) increase 1 unit with increasing 434,152 respectively. And life_expectancy increase 1 unit, then decrease 1.614125 in child_mortality. And  government_effectiveness increase 1 unit, then decrease 1.69975 in child_mortality. And we can see healthcare, and education15, urban_population_pct are not significant any more.
+```{r thirdquestion,echo=FALSE}
+summary(ess)
+```
+
+We can see from the summary outcome, that  there is None in any rows, so we don't need drop any rows.
+
+For the model, we choose country_attach , Income, years_education,  trust_politicians, eu_integration as our predictors.
+
+Here is the reason why we choose these predictors:
+
+Years_education: I think that people with high education levels may have a better understanding of the negative impact of the choice of leaving the EU in the long run. For example, after the Brexit, the British economy will be broken due to economic agreements and regulations with European countries. Turbulence; the cost of British natives going to work and studying in Europe will increase because of Brexit.
+
+Income: [ 1 indicates that the respondent's income is higher than the median income of the country in which he or she is located, otherwise it is 0 ]
+
+As a whole, EU Customs has made the purchase of products in other regions within the EU more expensive. People with low income levels will want to leave the EU to reduce the cost of purchasing daily necessities outside the EU to save on living costs. The more they want to reduce the immigration of immigrants from the EU to their employment, medical care, etc., the more likely they are to vote. Leaving the EU.
+
+ 
+
+Trust politicians: [ The extent to which respondents trust politicians (0 = low trust, 10 = high)
+
+Trust) ]
+
+The more people trust politicians, the more confident they are about the attitudes and behaviors of their politicians in safeguarding their national interests in the activities of the EU, and the less they will be worried about staying in the EU because they are worried about their own interests. Fear, the relatively less inclined to vote to leave the EU.
+
+ 
+
+Country attach: [ Respondents emotional attachment to their country (0 = no emotional attachment; 10 = very dependent emotionally)]
+
+The stronger the emotional attachment to the country , the less likely people are to accept the possibility of being ¡°assimilated¡± by other EU countries , and the more likely they are to leave the EU.
+
+ 
+
+Eu integration: [Respondents unified / integrated view of Europe (0 = "unification already gone too far"; 10 = "unification should go further")]
+
+If people think that the process of European reunification has gone too far, then they will be more inclined to vote to leave the EU; on the contrary, if they feel that the process needs further, they will be more willing to stay in the EU.
+
+```{r third2}
+logit_model <- glm( leave ~eu_integration+country_attach+years_education+trust_politicians+income, data = ess, family = binomial(link = "logit") ) 
+screenreg(logit_model)
+
+```
+we can see from the logit fit, the eu_integration, country_attach, years_education, trust_politicians, income are significant£¨which p-value smaller than 0.05£©. 
+Statistical Interpretion:
+One unit change in eu_integration is associated with a -0.37 change in the log-odds of leave, holding constant other variables. Here, the coe???cient on trust_politicians is equal to -0.09.implying that the one unit change in trust_politication is associated with -0.09 change in the log-odds of leave, holding constant other variables, and country_attach is that one unit change in trade_union, -0.05 increase in the log-odds of leave, holding other values constant. news_consumption and age are not significant and have nearly 0 effect on prediction for leave, One unit change in education_years is associated with a -0.04 change in the log-odds of leave, holding constant other variables, and for income is   -0.22.
+
+```{r third3,echo=FALSE}
+profiles0<- data.frame( years_education=  seq(from = min(ess$years_education), to = max(ess$year), by = .5) ,trust_politicians=mean(ess$trust_politicians),income=0,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach))
+profiles0$predicted_probs <- predict( logit_model, newdata = profiles0, type = "response" )
+profiles01<- data.frame( years_education=  seq(from = min(ess$years_education), to = max(ess$year), by = .5) ,trust_politicians=mean(ess$trust_politicians),income=1,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach))
+profiles01$predicted_probs <- predict( logit_model, newdata = profiles01, type = "response" )
+plot( predicted_probs ~ years_education, data = profiles0, xlab = "years_education", ylab = "Probability of leave", col = "LightSkyBlue", type = "l", lwd = 3)
+lines(predicted_probs~years_education,data=profiles01,xlab = "years_education", ylab = "Probability of leave", col = "red", type = "l", lwd = 3)
+
+profiles1<- data.frame( years_education= mean(ess$years_education),trust_politicians=seq(from=min(ess$trust_politicians),to=max(ess$trust_politicians),by=0.5),income=0,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach))
+profiles1$predicted_probs <- predict( logit_model, newdata = profiles1, type = "response" )
+profiles11<- data.frame( years_education= mean(ess$years_education),trust_politicians=seq(from=min(ess$trust_politicians),to=max(ess$trust_politicians),by=0.5),income=1,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach))
+profiles11$predicted_probs <- predict( logit_model, newdata = profiles11, type = "response" )
+plot( predicted_probs ~ trust_politicians, data = profiles1, xlab = "trust_politicians", ylab = "Probability of leave", col = "LightSkyBlue", type = "l", lwd = 3)
+lines(predicted_probs~trust_politicians,data=profiles11,xlab = "trust_politicians", ylab = "Probability of leave", col = "red", type = "l", lwd = 3)
+
+profiles2<- data.frame( years_education= mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=0,eu_integration=seq(from=min(ess$eu_integration),to=max(ess$eu_integration),by=.5),country_attach=mean(ess$country_attach))
+profiles2$predicted_probs <- predict( logit_model, newdata = profiles2, type = "response" )
+profiles21<- data.frame( years_education= mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=1,eu_integration=seq(from=min(ess$eu_integration),to=max(ess$eu_integration),by=.5),country_attach=mean(ess$country_attach))
+profiles21$predicted_probs <- predict( logit_model, newdata = profiles21, type = "response" )
+plot( predicted_probs ~ eu_integration, data = profiles2, xlab = "eu_integration", ylab = "Probability of leave", col = "LightSkyBlue", type = "l", lwd = 3)
+lines(predicted_probs~eu_integration,data=profiles21,xlab = "eu_integrtion", ylab = "Probability of leave", col = "red", type = "l", lwd = 3)
+
+profiles3<- data.frame( years_education= mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=0,eu_integration=mean(ess$eu_integration),country_attach=seq(from=min(ess$country_attach),to=max(ess$country_attach),by=.5))
+profiles3$predicted_probs <- predict( logit_model, newdata = profiles3, type = "response" )
+profiles31<-  data.frame( years_education= mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=1,eu_integration=mean(ess$eu_integration),country_attach=seq(from=min(ess$country_attach),to=max(ess$country_attach),by=.5))
+profiles31$predicted_probs <- predict( logit_model, newdata = profiles31, type = "response" )
+plot( predicted_probs ~ country_attach, data = profiles3, xlab = "country_attach", ylab = "Probability of leave", col = "LightSkyBlue", type = "l", lwd = 3)
+lines(predicted_probs~country_attach,data=profiles31,xlab ="country_attach", ylab = "Probability of leave", col = "red", type = "l", lwd = 3)
+```
+We set the other value except the predictor we want as mean or 0/1 (for categorical value) fixed, and draw the plot for the predictors.
+so we can see each predictor has substantive effect on prediction.
+
+```{r checK,echo=FALSE}
+residuals<-residuals(logit_model) 
+plot(residuals~years_education,data=ess, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~ eu_integration,data=ess, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~country_attach,data=ess, col = "LightSkyBlue")
+abline(h=0)
+plot(residuals~trust_politicians,data=ess, col = "LightSkyBlue")
+abline(h=0)
+
+```
+
+Using residual plot, i find it is a bit  non-linear.Because the residual plot is a little not between zero. 
+
+
+
+(2)
+```{r thirda,echo=FALSE}
+logit_model2 <- glm( leave ~ country_attach +eu_integration+years_education+trust_politicians+income+ immig_econ + immig_culture , data = ess, family = binomial(link = "logit") ) 
+screenreg(list(logit_model,logit_model2))
+```
+We can see from the summary_table that for both AIC and BIC, Model2(including immig_econ,immig_culture) is smaller than previous model, and immig_econ and immig_culture are both significant predictors for prediction, so i think the model2 fit better than model1.
+
+Yes,  e???ects of the original variables change in this new model. The coeficient of eu_integration changes from -0.37 to -0.33, and years_education changes from -0.04 to -0.02.for trust_politicians    from -0.09 to -0.06., and for income from -0.22 to -0.19.
+I think maybe, the new added variables(immig_econ ,immig_culture)' effect overlap some of the effect of the original variables or immig_culture and immig_econ has some relation with original variables.
+
+```{r thirdend,echo=FALSE}
+profilesa<- data.frame( years_education=mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=0,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach),immig_econ=mean(ess$immig_econ),immig_culture=seq(from=min(ess$immig_culture),to=max(ess$immig_culture),by=0.5))
+profilesa$predicted_probs <- predict( logit_model2, newdata = profilesa, type = "response" )
+profilesb<- data.frame(years_education=mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=1,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach),immig_econ=mean(ess$immig_econ),immig_culture=seq(from=min(ess$immig_culture),to=max(ess$immig_culture),by=0.5))
+profilesb$predicted_probs <- predict( logit_model2, newdata = profilesb, type = "response" )
+plot( predicted_probs ~immig_culture, data = profilesa, xlab = "immig_culture", ylab = "Probability of leave", col = "LightSkyBlue", type = "l", lwd = 3)
+
+lines(predicted_probs~ immig_culture, data =profilesb, col = "red")
+legend("topright",legend = c(" with trade_union","without trade_union"),col = c("red","LightSkyBlue"),lty = c(1,1))
+#####################################################################################################################################
+profilesa1<- data.frame(years_education=mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=0,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach),immig_culture=mean(ess$immig_culture),immig_econ=seq(from=min(ess$immig_econ),to=max(ess$immig_econ),by=0.5))
+profilesa1$predicted_probs <- predict( logit_model2, newdata = profilesa1, type = "response" )
+profilesb1<- data.frame( years_education=mean(ess$years_education),trust_politicians=mean(ess$trust_politicians),income=1,eu_integration=mean(ess$eu_integration),country_attach=mean(ess$country_attach),immig_culture=mean(ess$immig_culture),immig_econ=seq(from=min(ess$immig_econ),to=max(ess$immig_econ),by=0.5))
+profilesb1$predicted_probs <- predict( logit_model2, newdata = profilesb1, type = "response" )
+plot( predicted_probs ~immig_econ, data = profilesa1, xlab = "immig_econ", ylab = "Probability of leave", col = "LightSkyBlue", type = "l", lwd = 3)
+
+lines(predicted_probs~ immig_econ, data =profilesb1, col = "red")
+legend("topright",legend = c(" with trade_union","without trade_union"),col = c("red","LightSkyBlue"),lty = c(1,1))
+```
+
+```{r end,echo=FALSE}
+pps <- predict(logit_model, newdata = ess, type = "response")
+evs <- ifelse(pps > 0.5, yes = 1, no = 0)
+confusion <- table(actual = ess$leave, expected.value = evs)
+sum(diag(confusion)) / sum(confusion)
+pps2<- predict(logit_model2, newdata = ess, type = "response")
+evs2<- ifelse(pps2> 0.5, yes = 1, no = 0)
+confusion2<- table(actual = ess$leave, expected.value = evs2)
+sum(diag(confusion2)) / sum(confusion2)
+```
+From the descriptive plots ,we can see that immig_culture and immig_econ are substantive for the predictions. And we compute the power of prediction for the two model, we get for the model1 accuracy is  0.8295985 and for model2 we can get 0.831587, so we can see that adding immig_econ and immig_culture two variables is good to prediction, which means these two variables are substantive effective.
+
+
+
+
